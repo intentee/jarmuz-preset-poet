@@ -42,7 +42,7 @@ export function esbuild({ development }) {
       format: "esm",
       target: "es2024",
       loader: {
-        ".jpg": "file",
+        ".avif": "file",
         ".otf": "file",
         ".png": "file",
         ".svg": "file",
