@@ -1,0 +1,19 @@
+{
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "license": "Apache-2.0",
+  "name": "jarmuz-preset-poet",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/intentee/jarmuz-preset-poet.git"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "version": "0.1.0",
+  "dependencies": {
+    "esbuild": "^0.25.9",
+    "glob": "^11.0.3",
+    "jarmuz": "^0.6.0"
+  }
+}
