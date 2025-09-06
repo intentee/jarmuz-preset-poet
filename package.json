@@ -10,10 +10,12 @@
   },
   "sideEffects": false,
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "dependencies": {
     "esbuild": "^0.25.9",
+    "fs-extra": "^11.3.1",
     "glob": "^11.0.3",
-    "jarmuz": "^0.6.0"
+    "jarmuz": "^0.6.0",
+    "typed-css-modules": "^0.9.1"
   }
 }

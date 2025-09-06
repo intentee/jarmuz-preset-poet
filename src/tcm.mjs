@@ -9,7 +9,7 @@ export function tcm() {
   basic(async function ({ baseDirectory }) {
     let outDir = join(baseDirectory, "resources/ts");
 
-    for (const filepath of await glob(`${baseDirectory/}resources/ts/components/**/*.module.css.d.ts`)) {
+    for (const filepath of await glob(`${baseDirectory}/resources/ts/components/**/*.module.css.d.ts`)) {
       await unlink(filepath);
     }
 

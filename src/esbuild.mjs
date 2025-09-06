@@ -1,4 +1,4 @@
-import * as esbuild from "esbuild";
+import { build } from "esbuild";
 import { emptyDir } from "fs-extra";
 import { writeFile } from "fs/promises";
 import { glob } from "glob";
@@ -70,7 +70,7 @@ export function esbuild({ development }) {
 
     console.log("");
 
-    const result = await esbuild.build(settings);
+    const result = await build(settings);
 
     await writeFile(METAFILE_FILENAME, JSON.stringify(result.metafile));
 
