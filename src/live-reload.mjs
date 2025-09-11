@@ -11,6 +11,16 @@ let liveReloadSocket = null;
 
 function morphDocument(updatedHTML) {
   Idiomorph.morph(document.documentElement, updatedHTML, {
+    callbacks: {
+      beforeNodeMorphed(oldNode) {
+        if (
+          "function" === typeof oldNode.hasAttribute &&
+          oldNode.hasAttribute("data-poet-permanent")
+        ) {
+          return false;
+        }
+      },
+    },
     head: {
       style: "morph",
     },
