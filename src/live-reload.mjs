@@ -22,7 +22,7 @@ function morphDocument(updatedHTML) {
       },
     },
     head: {
-      style: "morph",
+      style: "merge",
     },
   });
 }
