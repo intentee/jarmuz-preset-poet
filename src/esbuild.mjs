@@ -19,12 +19,14 @@ export function esbuild({ development }) {
 
     await emptyDir(outdir);
 
-    const inject = await glob([`${baseDirectory}/resources/ts/polyfill_*.{ts,tsx}`]);
+    const inject = await glob([
+      `${baseDirectory}/resources/ts/polyfill_*.{ts,tsx}`,
+    ]);
 
     const entryPoints = await glob([
       `${baseDirectory}/resources/css/{component,fragment,global,layout,page}-*.css`,
       `${baseDirectory}/resources/media/**/*.{avif,gif,jpg,jpeg,png,svg,webp}`,
-      `${baseDirectory}/resources/ts/{controller,global,worker}{_,-}*.{ts,tsx}`,
+      `${baseDirectory}/resources/ts/{controller,global,worker}{_,-}*.{js,mjs,ts,tsx}`,
     ]);
 
     printSubtreeList({
@@ -84,4 +86,3 @@ export function esbuild({ development }) {
     }
   });
 }
-
