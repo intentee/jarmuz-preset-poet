@@ -7,16 +7,17 @@ import { basic } from "jarmuz/job-types";
 
 export function tcm() {
   basic(async function ({ baseDirectory }) {
-    let outDir = join(baseDirectory, "resources/ts");
+    let outDir = join(baseDirectory, "resources/ts/components");
+    let searchDir = join(baseDirectory, "resources/ts/components");
 
     for (const filepath of await glob(
-      `${baseDirectory}/resources/ts/components/**/*.module.css.d.ts`,
+      `${baseDirectory}/resources/ts/components/*.module.css.d.ts`,
     )) {
       await unlink(filepath);
     }
 
-    await run(outDir, {
-      pattern: `${baseDirectory}/resources/ts/**/*.module.css`,
+    await run(searchDir, {
+      pattern: "*.module.css",
       outDir,
       watch: false,
       camelCase: false,
