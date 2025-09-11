@@ -1,4 +1,4 @@
-import { build } from "esbuild";
+import { context } from "esbuild";
 import { emptyDir } from "fs-extra";
 import { writeFile } from "fs/promises";
 import { glob } from "glob";
@@ -8,6 +8,25 @@ import { basic } from "jarmuz/job-types";
 
 const METAFILE_FILENAME = "esbuild-meta.json";
 const PUBLIC_PATH = "/assets/";
+
+let currentContext = null;
+let currentContextSettingsHash = "";
+
+async function getContext(settings) {
+  const settingsHash = JSON.stringify(settings);
+
+  if (currentContextSettingsHash !== settingsHash) {
+    console.log("Build: recreating esbuild context");
+    currentContextSettingsHash = settingsHash;
+    currentContext = await context(settings);
+  }
+
+  if (!currentContext) {
+    throw new Error("There is no current esbuild context");
+  }
+
+  return currentContext;
+}
 
 export function esbuild({ development }) {
   basic(async function ({ baseDirectory, buildId, printSubtreeList }) {
@@ -59,7 +78,6 @@ export function esbuild({ development }) {
         "process.env.NODE_ENV": JSON.stringify(
           development ? "development" : "production",
         ),
-        __BUILD_ID: JSON.stringify(buildId),
         __DEV__: JSON.stringify(String(development)),
         __PUBLIC_PATH: JSON.stringify(PUBLIC_PATH),
       },
@@ -72,7 +90,8 @@ export function esbuild({ development }) {
 
     console.log("");
 
-    const result = await build(settings);
+    const context = await getContext(settings);
+    const result = await context.rebuild();
 
     await writeFile(METAFILE_FILENAME, JSON.stringify(result.metafile));
 

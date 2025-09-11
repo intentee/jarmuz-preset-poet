@@ -49,17 +49,21 @@ function keepSocketAlive(setupCallback) {
     intendsClose = false;
   };
 
-  liveReloadSocket.onmessage = function (event) {
+  liveReloadSocket.onmessage = async function (event) {
     const updatedHTML = event.data.trim();
     const updatedHTMLWithoutDoctype = updatedHTML.startsWith(DOCTYPE)
       ? updatedHTML.substring(DOCTYPE.length)
       : updatedHTML;
 
-    setupCallback({
-      morphDocument,
-      updatedHTML,
-      updatedHTMLWithoutDoctype,
-    });
+    try {
+      await setupCallback({
+        morphDocument,
+        updatedHTML,
+        updatedHTMLWithoutDoctype,
+      });
+    } finally {
+      document.dispatchEvent(new Event("poet:live-reloaded"));
+    }
   };
 
   liveReloadSocket.onerror = function (event) {
@@ -67,6 +71,36 @@ function keepSocketAlive(setupCallback) {
 
     liveReloadSocket?.close();
   };
+}
+
+export function initialize(metaUrl, initializeCallback) {
+  let abortController = new AbortController();
+
+  initializeCallback({
+    signal: abortController.signal,
+  });
+
+  document.addEventListener("poet:live-reloaded", function () {
+    for (const script of Array.from(document.querySelectorAll("script"))) {
+      // script still in the document
+      if (script.src === metaUrl) {
+        // reverted back to the original contents
+        if (abortController.signal.aborted) {
+          console.log("[poet] rendering old version of the script");
+
+          abortController = new AbortController();
+
+          initializeCallback({
+            signal: abortController.signal,
+          });
+        }
+
+        return;
+      }
+    }
+
+    abortController.abort();
+  });
 }
 
 export function liveReload(setupCallback) {
