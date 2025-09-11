@@ -1,10 +1,11 @@
 {
   "exports": {
     ".": "./src/index.mjs",
-    "./live-reload": {
-      "import": "./src/live-reload.mjs",
-      "types": "./src/live-reload.d.ts"
-    }
+    "./live-reload/initialize": {
+      "import": "./src/live-reload-initialize.mjs",
+      "types": "./src/live-reload-initialize.d.ts"
+    },
+    "./live-reload": "./src/live-reload.mjs"
   },
   "license": "Apache-2.0",
   "name": "jarmuz-preset-poet",
@@ -14,7 +15,7 @@
   },
   "sideEffects": false,
   "type": "module",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "dependencies": {
     "esbuild": "^0.25.9",
     "fs-extra": "^11.3.1",
