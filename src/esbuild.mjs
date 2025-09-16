@@ -44,7 +44,7 @@ export function esbuild({ development }) {
 
     const entryPoints = await glob([
       `${baseDirectory}/resources/css/{component,fragment,global,layout,page}-*.css`,
-      `${baseDirectory}/resources/media/**/*.{avif,gif,jpg,jpeg,png,svg,webp}`,
+      `${baseDirectory}/resources/media/**/*.{avif,gif,jpg,jpeg,mp4,png,svg,webm,webp}`,
       `${baseDirectory}/resources/ts/{controller,global,worker}{_,-}*.{js,mjs,ts,tsx}`,
     ]);
 
@@ -64,10 +64,12 @@ export function esbuild({ development }) {
       target: "es2024",
       loader: {
         ".avif": "file",
+        ".mp4": "file",
         ".otf": "file",
         ".png": "file",
         ".svg": "file",
         ".ttf": "file",
+        ".webm": "file",
         ".webp": "file",
         ".woff2": "file",
       },
