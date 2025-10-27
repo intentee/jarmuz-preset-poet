@@ -46,6 +46,7 @@ export function esbuild({ development }) {
       `${baseDirectory}/resources/css/{component,fragment,global,layout,page}-*.css`,
       `${baseDirectory}/resources/media/**/*.{avif,gif,jpg,jpeg,mp4,png,svg,webm,webp}`,
       `${baseDirectory}/resources/ts/{controller,global,worker}{_,-}*.{js,mjs,ts,tsx}`,
+      `${baseDirectory}/resources/manifest.json`,
     ]);
 
     printSubtreeList({
@@ -72,6 +73,7 @@ export function esbuild({ development }) {
         ".webm": "file",
         ".webp": "file",
         ".woff2": "file",
+        ".json": "file",
       },
       assetNames: `[name]_[hash]`,
       entryNames: `[name]_[hash]`,
