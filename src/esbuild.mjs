@@ -44,7 +44,7 @@ export function esbuild({ development }) {
 
     const entryPoints = await glob([
       `${baseDirectory}/resources/css/{component,fragment,global,layout,page}-*.css`,
-      `${baseDirectory}/resources/media/**/*.{avif,gif,jpg,jpeg,mp4,png,svg,webm,webp}`,
+      `${baseDirectory}/resources/media/**/*.{avif,gif,jpg,jpeg,mp4,png,svg,webm,webp,zip}`,
       `${baseDirectory}/resources/ts/{controller,global,worker}{_,-}*.{js,mjs,ts,tsx}`,
     ]);
 
@@ -72,6 +72,7 @@ export function esbuild({ development }) {
         ".webm": "file",
         ".webp": "file",
         ".woff2": "file",
+        ".zip": "file",
       },
       assetNames: `[name]_[hash]`,
       entryNames: `[name]_[hash]`,
