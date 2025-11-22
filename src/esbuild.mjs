@@ -81,6 +81,7 @@ export function esbuild({ development }) {
         "process.env.NODE_ENV": JSON.stringify(
           development ? "development" : "production",
         ),
+        __BUILD_ID: buildId,
         __DEV__: JSON.stringify(String(development)),
         __PUBLIC_PATH: JSON.stringify(PUBLIC_PATH),
       },
