@@ -45,7 +45,7 @@ export function esbuild({ development }) {
     const entryPoints = await glob([
       `${baseDirectory}/resources/css/{component,fragment,global,layout,page}-*.css`,
       `${baseDirectory}/resources/media/**/*.{avif,gif,jpg,jpeg,mp4,png,svg,webm,webp,zip}`,
-      `${baseDirectory}/resources/ts/{controller,global,worker}{_,-}*.{js,mjs,ts,tsx}`,
+      `${baseDirectory}/resources/ts/{controller,global,service_worker,worker}{_,-}*.{js,mjs,ts,tsx}`,
     ]);
 
     printSubtreeList({
