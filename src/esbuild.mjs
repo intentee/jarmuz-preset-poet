@@ -45,7 +45,6 @@ export function esbuild({ development }) {
     const entryPoints = await glob([
       `${baseDirectory}/resources/css/{component,fragment,global,layout,page}-*.css`,
       `${baseDirectory}/resources/media/**/*.{avif,gif,jpg,jpeg,mp4,png,svg,webm,webp,zip}`,
-      `${baseDirectory}/resources/ts/service_worker.{js,mjs,ts,tsx}`,
       `${baseDirectory}/resources/ts/{controller,global,worker}{_,-}*.{js,mjs,ts,tsx}`,
     ]);
 
@@ -84,6 +83,7 @@ export function esbuild({ development }) {
         ),
         __BUILD_ID: JSON.stringify(buildId),
         __DEV__: JSON.stringify(String(development)),
+        __ESBUILD_OUTPUT_PATHS: JSON.stringify(null),
         __PUBLIC_PATH: JSON.stringify(PUBLIC_PATH),
       },
       inject,
@@ -101,12 +101,59 @@ export function esbuild({ development }) {
     await writeFile(METAFILE_FILENAME, JSON.stringify(result.metafile));
 
     console.log(`Build metafile written to: ${METAFILE_FILENAME}`);
-    console.log(
-      `Build finished with ID: ${buildId} in ${Math.round(performance.now() - start)} milliseconds`,
-    );
 
     if (result.errors.length > 0 || result.warnings.length > 0) {
       return false;
     }
+
+    // Service worker is a special case because it needs to access all the previous asset paths.
+
+    console.log(`Building service worker: ${buildId}`);
+
+    const serviceWorkerSettings = {
+      outdir,
+      bundle: true,
+      entryPoints: await glob([
+        `${baseDirectory}/resources/ts/service_worker.{js,mjs,ts,tsx}`,
+      ]),
+      minify: !development,
+      sourcemap: true,
+      splitting: false,
+      format: "esm",
+      target: "es2024",
+      assetNames: `[name]`,
+      entryNames: `[name]`,
+      metafile: true,
+      define: {
+        "process.env.NODE_ENV": JSON.stringify(
+          development ? "development" : "production",
+        ),
+        __BUILD_ID: JSON.stringify(buildId),
+        __DEV__: JSON.stringify(String(development)),
+        __ESBUILD_OUTPUT_PATHS: JSON.stringify(
+          Object.keys(result.metafile.outputs),
+        ),
+        __PUBLIC_PATH: JSON.stringify(PUBLIC_PATH),
+      },
+      inject,
+      preserveSymlinks: true,
+      publicPath: PUBLIC_PATH,
+      treeShaking: true,
+      tsconfig: "tsconfig.json",
+    };
+
+    const serviceWorkerContext = await getContext(serviceWorkerSettings);
+    const serviceWorkerResult = await serviceWorkerContext.rebuild();
+
+    if (
+      serviceWorkerResult.errors.length > 0 ||
+      serviceWorkerResult.warnings.length > 0
+    ) {
+      return false;
+    }
+
+    console.log(
+      `Build finished with ID: ${buildId} in ${Math.round(performance.now() - start)} milliseconds`,
+    );
   });
 }
