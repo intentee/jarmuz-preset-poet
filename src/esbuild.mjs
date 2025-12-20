@@ -64,7 +64,9 @@ export function esbuild({ development }) {
       target: "es2024",
       loader: {
         ".avif": "file",
+        ".glb": "file",
         ".mp4": "file",
+        ".obj": "file",
         ".otf": "file",
         ".png": "file",
         ".svg": "file",
