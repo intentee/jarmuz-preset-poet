@@ -19,14 +19,17 @@
   "dependencies": {
     "esbuild": "^0.25.9",
     "fs-extra": "^11.3.1",
-    "glob": "^11.0.3",
+    "glob": "^13.0.6",
     "idiomorph": "^0.7.3",
     "typed-css-modules": "^0.9.1"
   },
   "peerDependencies": {
-    "jarmuz": "^0.10.0"
+    "jarmuz": "^0.11.0"
   },
   "devDependencies": {
     "prettier-plugin-organize-imports": "^4.2.0"
+  },
+  "overrides": {
+    "glob": "$glob"
   }
 }
