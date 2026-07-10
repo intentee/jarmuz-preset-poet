@@ -1,4 +1,3 @@
-import { context } from "esbuild";
 import { emptyDir } from "fs-extra";
 import { writeFile } from "fs/promises";
 import { glob } from "glob";
@@ -6,27 +5,10 @@ import path from "path";
 
 import { basic } from "jarmuz/job-types";
 
+import { withEsbuildContext } from "./with-esbuild-context.mjs";
+
 const METAFILE_FILENAME = "esbuild-meta.json";
 const PUBLIC_PATH = "/assets/";
-
-let currentContext = null;
-let currentContextSettingsHash = "";
-
-async function getContext(settings) {
-  const settingsHash = JSON.stringify(settings);
-
-  if (currentContextSettingsHash !== settingsHash) {
-    console.log("Build: recreating esbuild context");
-    currentContextSettingsHash = settingsHash;
-    currentContext = await context(settings);
-  }
-
-  if (!currentContext) {
-    throw new Error("There is no current esbuild context");
-  }
-
-  return currentContext;
-}
 
 export function esbuild({ development }) {
   basic(async function ({ baseDirectory, buildId, printSubtreeList }) {
@@ -97,65 +79,70 @@ export function esbuild({ development }) {
 
     console.log("");
 
-    const context = await getContext(settings);
-    const result = await context.rebuild();
+    return await withEsbuildContext(settings, async function (buildContext) {
+      const result = await buildContext.rebuild();
 
-    await writeFile(METAFILE_FILENAME, JSON.stringify(result.metafile));
+      await writeFile(METAFILE_FILENAME, JSON.stringify(result.metafile));
 
-    console.log(`Build metafile written to: ${METAFILE_FILENAME}`);
+      console.log(`Build metafile written to: ${METAFILE_FILENAME}`);
 
-    if (result.errors.length > 0 || result.warnings.length > 0) {
-      return false;
-    }
+      if (result.errors.length > 0 || result.warnings.length > 0) {
+        return false;
+      }
 
-    // Service worker is a special case because it needs to access all the previous asset paths.
+      // Service worker is a special case because it needs to access all the previous asset paths.
 
-    console.log(`Building service worker: ${buildId}`);
+      console.log(`Building service worker: ${buildId}`);
 
-    const serviceWorkerSettings = {
-      outdir,
-      bundle: true,
-      entryPoints: await glob([
-        `${baseDirectory}/resources/ts/service_worker.{js,mjs,ts,tsx}`,
-      ]),
-      minify: !development,
-      sourcemap: true,
-      splitting: false,
-      format: "esm",
-      target: "es2024",
-      assetNames: `[name]`,
-      entryNames: `[name]`,
-      metafile: true,
-      define: {
-        "process.env.NODE_ENV": JSON.stringify(
-          development ? "development" : "production",
-        ),
-        __BUILD_ID: JSON.stringify(buildId),
-        __DEV__: JSON.stringify(String(development)),
-        __ESBUILD_OUTPUT_PATHS: JSON.stringify(
-          Object.keys(result.metafile.outputs),
-        ),
-        __PUBLIC_PATH: JSON.stringify(PUBLIC_PATH),
-      },
-      inject,
-      preserveSymlinks: true,
-      publicPath: PUBLIC_PATH,
-      treeShaking: true,
-      tsconfig: "tsconfig.json",
-    };
+      const serviceWorkerSettings = {
+        outdir,
+        bundle: true,
+        entryPoints: await glob([
+          `${baseDirectory}/resources/ts/service_worker.{js,mjs,ts,tsx}`,
+        ]),
+        minify: !development,
+        sourcemap: true,
+        splitting: false,
+        format: "esm",
+        target: "es2024",
+        assetNames: `[name]`,
+        entryNames: `[name]`,
+        metafile: true,
+        define: {
+          "process.env.NODE_ENV": JSON.stringify(
+            development ? "development" : "production",
+          ),
+          __BUILD_ID: JSON.stringify(buildId),
+          __DEV__: JSON.stringify(String(development)),
+          __ESBUILD_OUTPUT_PATHS: JSON.stringify(
+            Object.keys(result.metafile.outputs),
+          ),
+          __PUBLIC_PATH: JSON.stringify(PUBLIC_PATH),
+        },
+        inject,
+        preserveSymlinks: true,
+        publicPath: PUBLIC_PATH,
+        treeShaking: true,
+        tsconfig: "tsconfig.json",
+      };
 
-    const serviceWorkerContext = await getContext(serviceWorkerSettings);
-    const serviceWorkerResult = await serviceWorkerContext.rebuild();
+      return await withEsbuildContext(
+        serviceWorkerSettings,
+        async function (serviceWorkerContext) {
+          const serviceWorkerResult = await serviceWorkerContext.rebuild();
 
-    if (
-      serviceWorkerResult.errors.length > 0 ||
-      serviceWorkerResult.warnings.length > 0
-    ) {
-      return false;
-    }
+          if (
+            serviceWorkerResult.errors.length > 0 ||
+            serviceWorkerResult.warnings.length > 0
+          ) {
+            return false;
+          }
 
-    console.log(
-      `Build finished with ID: ${buildId} in ${Math.round(performance.now() - start)} milliseconds`,
-    );
+          console.log(
+            `Build finished with ID: ${buildId} in ${Math.round(performance.now() - start)} milliseconds`,
+          );
+        },
+      );
+    });
   });
 }
